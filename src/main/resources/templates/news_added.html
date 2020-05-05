@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>News</title>
+</head>
+<body>
+
+<h2>Новость добавлена!</h2><br>
+
+<p th:text="'News name: ' + ${news.name}" />
+<p th:text="'User name: ' + ${news.userName}" />
+
+<br><a href="/news">Назад</a>
+
+</body>
+</html>

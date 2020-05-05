@@ -4,16 +4,17 @@ import org.hibernate.annotations.GenericGenerator
 import javax.persistence.*
 
 @Entity
-@Table(name = "user_entity")
-data class User(
+@Table(name = "news")
+data class News(
 
         @Column(nullable = false)
         val name: String,
 
-        @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = [CascadeType.REMOVE])
-        val news: List<News> = emptyList(),
+        @JoinColumn(name = "user_id")
+        @ManyToOne
+        val user: User,
 
-        @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = [CascadeType.REMOVE])
+        @OneToMany(mappedBy = "news", fetch = FetchType.EAGER, cascade = [CascadeType.REMOVE])
         val comment: List<Comment> = emptyList(),
 
         @Id

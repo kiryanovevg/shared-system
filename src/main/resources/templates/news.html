@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>News</title>
+</head>
+<body>
+
+<a href="/">Главная</a><br>
+
+<form action="#" th:action="@{/news}" th:object="${news}" method="post">
+    <p>User name: <input type="text" th:field="*{userName}" /></p>
+    <p>News name: <input type="text" th:field="*{name}" /></p>
+    <p>
+        <input type="submit" value="Submit" />
+        <input type="reset" value="Reset" />
+    </p>
+</form><br><br>
+
+<tbody>
+<tr th:if="${newsList.empty}">
+    <td colspan="2"> No News Available </td>
+</tr>
+<tr th:each="news : ${newsList}">
+    <td><span th:text="'News id: ' + ${news.id}"> Title </span></td><br>
+    <td><span th:text="'News name: ' + ${news.name}"> Title </span></td><br>
+    <td><span th:text="'User name: ' + ${news.userName}"> Author </span></td><br>
+    <a th:href="@{/news/delete/{id}(id=${news.id})}" class="btn btn-danger">Delete</a><br><br>
+</tr>
+</tbody>
+
+</body>
+</html>

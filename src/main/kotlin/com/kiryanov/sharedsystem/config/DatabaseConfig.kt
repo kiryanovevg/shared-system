@@ -4,10 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.jdbc.DataSourceBuilder
+import org.springframework.boot.web.server.ErrorPage
+import org.springframework.boot.web.server.WebServerFactoryCustomizer
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.http.HttpStatus
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter
@@ -92,5 +96,12 @@ class ImageDatabaseConfig(
             @Qualifier("imageEntityManagerFactory") entityManagerFactory: EntityManagerFactory
     ): PlatformTransactionManager {
         return JpaTransactionManager(entityManagerFactory)
+    }
+}
+
+@Bean
+fun webServerCustomizer(): WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
+    return WebServerFactoryCustomizer { container ->
+        container.addErrorPages(ErrorPage(HttpStatus.NOT_FOUND, "/"))
     }
 }
