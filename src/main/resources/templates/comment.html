@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Comment</title>
+</head>
+<body>
+
+<a href="/">Главная</a><br>
+
+<form action="#" th:action="@{/comment}" th:object="${comment}" method="post">
+    <p>User name: <input type="text" th:field="*{userName}" /></p>
+    <p>News id: <input type="text" th:field="*{newsId}" /></p>
+    <p>Comment message: <input type="text" th:field="*{message}" /></p>
+    <p>
+        <input type="submit" value="Submit" />
+        <input type="reset" value="Reset" />
+    </p>
+
+    <p th:if="${exception}" th:text="${exception}">Exception text</p>
+</form><br><br>
+
+<tbody>
+<tr th:if="${commentList.empty}">
+    <td colspan="2"> No Comments Available </td>
+</tr>
+<tr th:each="item : ${commentList}">
+    <td><span th:text="'Comment id: ' + ${item.id}"> Title </span></td><br>
+    <td><span th:text="'Comment message: ' + ${item.message}"> Title </span></td><br>
+    <td><span th:text="'News id: ' + ${item.newsId}"> Title </span></td><br>
+    <td><span th:text="'News name: ' + ${item.newsName}"> Title </span></td><br>
+    <td><span th:text="'User name: ' + ${item.userName}"> Author </span></td><br>
+    <a th:href="@{/comment/delete/{id}(id=${item.id})}">Delete</a><br><br>
+</tr>
+</tbody>
+
+</body>
+</html>
