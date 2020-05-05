@@ -9,6 +9,9 @@ data class Image(
 
         val name: String,
 
+        @Column(nullable = false)
+        val entityId: String,
+
         @Id
         @GeneratedValue(generator = "increment")
         @GenericGenerator(name= "increment", strategy= "increment")

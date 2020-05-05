@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Image</title>
+</head>
+<body>
+
+<a href="/">Главная</a><br>
+
+<form action="#" th:action="@{/image}" th:object="${image}" method="post">
+    <p>Image name: <input type="text" th:field="*{name}" /></p>
+    <p>Entity id: <input type="text" th:field="*{entityId}" /></p>
+    <p>
+        <input type="submit" value="Submit" />
+        <input type="reset" value="Reset" />
+    </p>
+
+    <p th:if="${exception}" th:text="${exception}">Exception text</p>
+</form><br><br>
+
+<tbody>
+<tr th:if="${imageList.empty}">
+    <td colspan="2"> No Images Available </td>
+</tr>
+<tr th:each="item : ${imageList}">
+    <td><span th:text="'Image id: ' + ${item.id}"> Title </span></td><br>
+    <td><span th:text="'Image name: ' + ${item.name}"> Title </span></td><br>
+    <td><span th:text="'Entity id: ' + ${item.entityId}"> Title </span></td><br>
+    <td><span th:text="'Entity type: ' + ${item.entityType}"> Title </span></td><br>
+    <a th:href="@{/image/delete/{id}(id=${item.id})}">Delete</a><br><br>
+</tr>
+</tbody>
+
+</body>
+</html>
