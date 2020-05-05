@@ -24,4 +24,7 @@ interface ImageRepository: JpaRepository<Image, Long> {
     @Transactional
     @Query("delete from Image im where im.entityId = :entityId")
     fun deleteImageByEntityId(@Param("entityId") entityId: String)
+
+    @Query("SELECT im FROM Image im WHERE im.id = :id")
+    fun findImageById(@Param("id") id: String): Image?
 }

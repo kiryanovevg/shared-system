@@ -8,13 +8,13 @@ import com.kiryanov.sharedsystem.repository.main.CommentRepository
 import com.kiryanov.sharedsystem.repository.main.NewsRepository
 import com.kiryanov.sharedsystem.repository.main.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.orm.jpa.JpaObjectRetrievalFailureException
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import javax.persistence.EntityNotFoundException
 
 @Controller
 class CommentController @Autowired constructor(
@@ -28,7 +28,7 @@ class CommentController @Autowired constructor(
     fun mainAction(model: Model): String {
         model.addAttribute(COMMENT_VIEW, CommentView())
         model.addAttribute(COMMENT_LIST, commentRepository.findAll().map {
-            CommentView.map(it, imageRepository.getImagesByEntityId(it.id.toString()))
+            CommentView.map(it, imageRepository.getImagesByEntityId(it.id))
         })
 
         return COMMENT_VIEW
@@ -40,12 +40,12 @@ class CommentController @Autowired constructor(
                 ?: userRepository.save(User(commentView.userName))
 
         val news = try {
-            newsRepository.getOne(commentView.newsId.toLong())
-        } catch (e: JpaObjectRetrievalFailureException) {
+            newsRepository.findNewsById(commentView.newsId) ?: throw EntityNotFoundException()
+        } catch (e: EntityNotFoundException) {
             model.addAttribute("exception", "News not found")
             return mainAction(model)
         } catch (e: Exception) {
-            model.addAttribute("exception", "News error: ${e.message}")
+            model.addAttribute("exception", "Comment error: ${e.message}")
             return mainAction(model)
         }
 
@@ -59,8 +59,8 @@ class CommentController @Autowired constructor(
 
     @GetMapping("/comment/delete/{commentId}")
     fun deleteAction(@PathVariable commentId: String, model: Model): String {
-        commentRepository.getOne(commentId.toLong()).let {
-            imageRepository.deleteImageByEntityId(it.id.toString())
+        commentRepository.findCommentById(commentId)?.let {
+            imageRepository.deleteImageByEntityId(it.id)
             commentRepository.delete(it)
         }
 
@@ -73,7 +73,7 @@ class CommentController @Autowired constructor(
     }
 
     data class CommentView constructor(
-            var id: Long = 0,
+            var id: String = "",
             var message: String = "",
             var userName: String = "",
             var newsId: String = "",
@@ -85,7 +85,7 @@ class CommentController @Autowired constructor(
                     comment.id,
                     comment.message,
                     comment.user.name,
-                    comment.news.id.toString(),
+                    comment.news.id,
                     comment.news.name,
                     images.joinToString { it.name }
             )

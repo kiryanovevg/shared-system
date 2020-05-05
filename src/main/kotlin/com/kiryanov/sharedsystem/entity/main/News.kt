@@ -1,6 +1,6 @@
 package com.kiryanov.sharedsystem.entity.main
 
-import org.hibernate.annotations.GenericGenerator
+import java.util.*
 import javax.persistence.*
 
 @Entity
@@ -18,8 +18,8 @@ data class News(
         val comment: List<Comment> = emptyList(),
 
         @Id
-        @GeneratedValue(generator = "increment")
-        @GenericGenerator(name= "increment", strategy= "increment")
+//        @GeneratedValue(generator = "increment")
+//        @GenericGenerator(name= "increment", strategy= "increment")
         @Column(nullable = false, updatable = false)
-        val id: Long = 0
+        val id: String = UUID.randomUUID().toString()
 )

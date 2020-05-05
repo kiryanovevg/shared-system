@@ -25,7 +25,7 @@ class NewsController @Autowired constructor(
     fun mainAction(model: Model): String {
         model.addAttribute(NEWS_VIEW, NewsView())
         model.addAttribute(NEWS_LIST, newsRepository.findAll().map {
-            NewsView.map(it, imageRepository.getImagesByEntityId(it.id.toString()))
+            NewsView.map(it, imageRepository.getImagesByEntityId(it.id))
         })
 
         return NEWS_VIEW
@@ -47,9 +47,9 @@ class NewsController @Autowired constructor(
 
     @GetMapping("/news/delete/{newsId}")
     fun deleteAction(@PathVariable newsId: String, model: Model): String {
-        newsRepository.getOne(newsId.toLong()).let {
-            imageRepository.deleteImageByEntityId(it.id.toString())
-            imageRepository.deleteImageByEntityId(it.comment.map { comment -> comment.id.toString() })
+        newsRepository.findNewsById(newsId)?.let {
+            imageRepository.deleteImageByEntityId(it.id)
+            imageRepository.deleteImageByEntityId(it.comment.map { comment -> comment.id })
             newsRepository.delete(it)
         }
 
@@ -62,7 +62,7 @@ class NewsController @Autowired constructor(
     }
 
     data class NewsView constructor(
-            var id: Long = 0,
+            var id: String = "",
             var name: String = "",
             var userName: String = "",
             var images: String = ""

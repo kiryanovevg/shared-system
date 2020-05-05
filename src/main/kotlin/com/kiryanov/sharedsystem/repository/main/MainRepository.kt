@@ -9,14 +9,21 @@ import org.springframework.data.repository.query.Param
 
 interface UserRepository: JpaRepository<User, Long> {
 
+    @Query("SELECT u FROM User u WHERE u.id = :id")
+    fun findUserById(@Param("id") id: String): User?
+
     @Query("SELECT u FROM User u WHERE u.name = :name")
     fun findUserByName(@Param("name") name: String): User?
 }
 
 interface NewsRepository: JpaRepository<News, Long> {
 
-//    @Query("SELECT n from News n where n.name = 'asd'")
-//    fun getNews(): News?
+    @Query("SELECT n FROM News n WHERE n.id = :id")
+    fun findNewsById(@Param("id") id: String): News?
 }
 
-interface CommentRepository: JpaRepository<Comment, Long>
+interface CommentRepository: JpaRepository<Comment, Long> {
+
+    @Query("SELECT c FROM Comment c WHERE c.id = :id")
+    fun findCommentById(@Param("id") id: String): Comment?
+}

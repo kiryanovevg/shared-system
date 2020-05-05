@@ -29,37 +29,21 @@ class ImageController @Autowired constructor(
 
     @PostMapping("/image")
     fun addAction(@ModelAttribute imageView: ImageView, model: Model): String {
-        val entityId = try {
-            imageView.entityId.toLong()
-        } catch (e: Exception) {
-            model.addAttribute("exception", e.message)
+        newsRepository.findNewsById(imageView.entityId)?.let {
+            imageRepository.save(Image(
+                    imageView.name,
+                    it.id
+            ))
             return mainAction(model)
         }
 
-        try {
-            newsRepository.getOne(entityId).let {
-                imageRepository.save(Image(
-                        imageView.name,
-                        it.id.toString()
-                ))
-            }
+        commentRepository.findCommentById(imageView.entityId)?.let {
+            imageRepository.save(Image(
+                    imageView.name,
+                    it.id
+            ))
 
             return mainAction(model)
-        } catch (e: Exception) {
-            //ignored
-        }
-
-        try {
-            commentRepository.getOne(entityId).let {
-                imageRepository.save(Image(
-                        imageView.name,
-                        it.id.toString()
-                ))
-            }
-
-            return mainAction(model)
-        } catch (e: Exception) {
-            //ignored
         }
 
         model.addAttribute("exception", "Entity not found")
@@ -68,7 +52,9 @@ class ImageController @Autowired constructor(
 
     @GetMapping("/image/delete/{imageId}")
     fun deleteAction(@PathVariable imageId: String, model: Model): String {
-        imageRepository.deleteById(imageId.toLong())
+        imageRepository.findImageById(imageId)?.let {
+            imageRepository.delete(it)
+        }
 
         return "redirect:/image"
     }
@@ -79,7 +65,7 @@ class ImageController @Autowired constructor(
     }
 
     data class ImageView constructor(
-            var id: Long = 0,
+            var id: String = "",
             var name: String = "",
             var entityId: String = "",
             var entityType: String = ""

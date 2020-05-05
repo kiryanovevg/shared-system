@@ -36,10 +36,11 @@ class UserController @Autowired constructor(
 
     @GetMapping("/user/delete/{userId}")
     fun deleteAction(@PathVariable userId: String, model: Model): String {
-        val deletedUser = userRepository.getOne(userId.toLong())
-        imageRepository.deleteImageByEntityId(deletedUser.comment.map { it.id.toString() })
-        imageRepository.deleteImageByEntityId(deletedUser.news.map { it.id.toString() })
-        userRepository.delete(deletedUser)
+        userRepository.findUserById(userId)?.let { deletedUser ->
+            imageRepository.deleteImageByEntityId(deletedUser.comment.map { it.id })
+            imageRepository.deleteImageByEntityId(deletedUser.news.map { it.id })
+            userRepository.delete(deletedUser)
+        }
 
         return "redirect:/user"
     }
@@ -50,7 +51,7 @@ class UserController @Autowired constructor(
     }
 
     data class UserView constructor(
-            var id: Long = 0,
+            var id: String = "",
             var name: String = ""
     ) {
         companion object {
