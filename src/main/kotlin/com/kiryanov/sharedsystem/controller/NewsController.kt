@@ -31,7 +31,7 @@ class NewsController @Autowired constructor(
         val user = userRepository.findUserByName(newsView.userName)
                 ?: userRepository.save(User(newsView.userName))
 
-        val savedNews = newsRepository.save(News(
+        /*val savedNews =*/ newsRepository.save(News(
                 newsView.name,
                 user
         ))
@@ -50,8 +50,6 @@ class NewsController @Autowired constructor(
     companion object {
         private const val NEWS_VIEW = "news"
         private const val NEWS_LIST = "newsList"
-
-//        private const val NEWS_ADDED_VIEW = "news_added"
     }
 
     data class NewsView constructor(

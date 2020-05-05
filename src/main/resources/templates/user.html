@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>User</title>
+</head>
+<body>
+
+<a href="/">Главная</a><br>
+
+<form action="#" th:action="@{/user}" th:object="${user}" method="post">
+    <p>User name: <input type="text" th:field="*{name}" /></p>
+    <p>
+        <input type="submit" value="Submit" />
+        <input type="reset" value="Reset" />
+    </p>
+
+    <p th:if="${userExist}">User exists</p>
+</form><br><br>
+
+<tbody>
+<tr th:if="${userList.empty}">
+    <td colspan="2"> No Users Available </td>
+</tr>
+<tr th:each="user : ${userList}">
+    <td><span th:text="'User id: ' + ${user.id}"> Title </span></td><br>
+    <td><span th:text="'User name: ' + ${user.name}"> Author </span></td><br>
+    <a th:href="@{/user/delete/{id}(id=${user.id})}">Delete</a><br><br>
+</tr>
+</tbody>
+
+</body>
+</html>

@@ -4,7 +4,7 @@ import org.hibernate.annotations.GenericGenerator
 import javax.persistence.*
 
 @Entity
-@Table(name = "image_entity")
+@Table(name = "image")
 data class Image(
 
         val name: String,

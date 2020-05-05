@@ -25,7 +25,7 @@
     <td><span th:text="'News id: ' + ${news.id}"> Title </span></td><br>
     <td><span th:text="'News name: ' + ${news.name}"> Title </span></td><br>
     <td><span th:text="'User name: ' + ${news.userName}"> Author </span></td><br>
-    <a th:href="@{/news/delete/{id}(id=${news.id})}" class="btn btn-danger">Delete</a><br><br>
+    <a th:href="@{/news/delete/{id}(id=${news.id})}">Delete</a><br><br>
 </tr>
 </tbody>
 
