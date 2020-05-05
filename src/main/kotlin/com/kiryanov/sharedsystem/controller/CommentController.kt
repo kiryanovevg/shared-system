@@ -59,7 +59,10 @@ class CommentController @Autowired constructor(
 
     @GetMapping("/comment/delete/{commentId}")
     fun deleteAction(@PathVariable commentId: String, model: Model): String {
-        commentRepository.deleteById(commentId.toLong())
+        commentRepository.getOne(commentId.toLong()).let {
+            imageRepository.deleteImageByEntityId(it.id.toString())
+            commentRepository.delete(it)
+        }
 
         return "redirect:/comment"
     }

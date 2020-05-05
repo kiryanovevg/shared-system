@@ -1,6 +1,7 @@
 package com.kiryanov.sharedsystem.controller
 
 import com.kiryanov.sharedsystem.entity.main.User
+import com.kiryanov.sharedsystem.repository.image.ImageRepository
 import com.kiryanov.sharedsystem.repository.main.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
@@ -12,7 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping
 
 @Controller
 class UserController @Autowired constructor(
-        private val userRepository: UserRepository
+        private val userRepository: UserRepository,
+        private val imageRepository: ImageRepository
 ) {
 
     @GetMapping("/user")
@@ -34,7 +36,10 @@ class UserController @Autowired constructor(
 
     @GetMapping("/user/delete/{userId}")
     fun deleteAction(@PathVariable userId: String, model: Model): String {
-        userRepository.deleteById(userId.toLong())
+        val deletedUser = userRepository.getOne(userId.toLong())
+        imageRepository.deleteImageByEntityId(deletedUser.comment.map { it.id.toString() })
+        imageRepository.deleteImageByEntityId(deletedUser.news.map { it.id.toString() })
+        userRepository.delete(deletedUser)
 
         return "redirect:/user"
     }

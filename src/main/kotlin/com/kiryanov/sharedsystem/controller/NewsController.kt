@@ -47,7 +47,11 @@ class NewsController @Autowired constructor(
 
     @GetMapping("/news/delete/{newsId}")
     fun deleteAction(@PathVariable newsId: String, model: Model): String {
-        newsRepository.deleteById(newsId.toLong())
+        newsRepository.getOne(newsId.toLong()).let {
+            imageRepository.deleteImageByEntityId(it.id.toString())
+            imageRepository.deleteImageByEntityId(it.comment.map { comment -> comment.id.toString() })
+            newsRepository.delete(it)
+        }
 
         return "redirect:/news"
     }
