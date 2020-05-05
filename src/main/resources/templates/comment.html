@@ -30,6 +30,7 @@
     <td><span th:text="'News id: ' + ${item.newsId}"> Title </span></td><br>
     <td><span th:text="'News name: ' + ${item.newsName}"> Title </span></td><br>
     <td><span th:text="'User name: ' + ${item.userName}"> Author </span></td><br>
+    <td><span th:text="'Images: ' + ${item.images}"> Author </span></td><br>
     <a th:href="@{/comment/delete/{id}(id=${item.id})}">Delete</a><br><br>
 </tr>
 </tbody>

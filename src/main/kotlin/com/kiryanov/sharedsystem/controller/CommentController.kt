@@ -1,7 +1,9 @@
 package com.kiryanov.sharedsystem.controller
 
+import com.kiryanov.sharedsystem.entity.image.Image
 import com.kiryanov.sharedsystem.entity.main.Comment
 import com.kiryanov.sharedsystem.entity.main.User
+import com.kiryanov.sharedsystem.repository.image.ImageRepository
 import com.kiryanov.sharedsystem.repository.main.CommentRepository
 import com.kiryanov.sharedsystem.repository.main.NewsRepository
 import com.kiryanov.sharedsystem.repository.main.UserRepository
@@ -18,13 +20,16 @@ import org.springframework.web.bind.annotation.PostMapping
 class CommentController @Autowired constructor(
         private val commentRepository: CommentRepository,
         private val userRepository: UserRepository,
-        private val newsRepository: NewsRepository
+        private val newsRepository: NewsRepository,
+        private val imageRepository: ImageRepository
 ) {
 
     @GetMapping("/comment")
     fun mainAction(model: Model): String {
         model.addAttribute(COMMENT_VIEW, CommentView())
-        model.addAttribute(COMMENT_LIST, commentRepository.findAll().map { CommentView.map(it) })
+        model.addAttribute(COMMENT_LIST, commentRepository.findAll().map {
+            CommentView.map(it, imageRepository.getImagesByEntityId(it.id.toString()))
+        })
 
         return COMMENT_VIEW
     }
@@ -70,15 +75,16 @@ class CommentController @Autowired constructor(
             var userName: String = "",
             var newsId: String = "",
             var newsName: String ="",
-            var imageName: String = ""
+            var images: String = ""
     ) {
         companion object {
-            fun map(comment: Comment) = CommentView(
+            fun map(comment: Comment, images: List<Image>) = CommentView(
                     comment.id,
                     comment.message,
                     comment.user.name,
                     comment.news.id.toString(),
-                    comment.news.name
+                    comment.news.name,
+                    images.joinToString { it.name }
             )
         }
     }
