@@ -4,14 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.jdbc.DataSourceBuilder
-import org.springframework.boot.web.server.ErrorPage
-import org.springframework.boot.web.server.WebServerFactoryCustomizer
-import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import org.springframework.http.HttpStatus
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter
@@ -75,7 +71,7 @@ class ImageDatabaseConfig(
     private val hibernateShowSql = environment.getProperty("spring.jpa.show-sql")
 
     @Bean("imageDataSource")
-    @ConfigurationProperties("image-database.datasource")
+    @ConfigurationProperties("image-database.datasource1")
     fun dataSource(): DataSource = DataSourceBuilder.create().build()
 
     @Bean("imageEntityManagerFactory")
@@ -99,9 +95,41 @@ class ImageDatabaseConfig(
     }
 }
 
-@Bean
-fun webServerCustomizer(): WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
-    return WebServerFactoryCustomizer { container ->
-        container.addErrorPages(ErrorPage(HttpStatus.NOT_FOUND, "/"))
+@Configuration
+@EnableTransactionManagement
+@EnableJpaRepositories(
+        entityManagerFactoryRef = "imageEntityManagerFactory2",
+        transactionManagerRef = "imageTransactionManager2",
+        basePackages = ["com.kiryanov.sharedsystem.repository.image2"]
+)
+class ImageDatabaseConfig2(
+        @Autowired environment: Environment
+) {
+
+    private val hibernateDdl = environment.getProperty("spring.jpa.hibernate.ddl-auto")
+    private val hibernateShowSql = environment.getProperty("spring.jpa.show-sql")
+
+    @Bean("imageDataSource2")
+    @ConfigurationProperties("image-database.datasource2")
+    fun dataSource(): DataSource = DataSourceBuilder.create().build()
+
+    @Bean("imageEntityManagerFactory2")
+    fun entityManagerFactory(
+            @Qualifier("imageDataSource2") dataSource: DataSource
+    ) = LocalContainerEntityManagerFactoryBean().apply {
+        setDataSource(dataSource)
+        setPackagesToScan("com.kiryanov.sharedsystem.entity.image")
+        jpaVendorAdapter = HibernateJpaVendorAdapter()
+        setJpaPropertyMap(mapOf(
+                "hibernate.show-sql" to hibernateShowSql,
+                "hibernate.hbm2ddl.auto" to hibernateDdl
+        ))
+    }
+
+    @Bean("imageTransactionManager2")
+    fun transactionManager(
+            @Qualifier("imageEntityManagerFactory2") entityManagerFactory: EntityManagerFactory
+    ): PlatformTransactionManager {
+        return JpaTransactionManager(entityManagerFactory)
     }
 }
