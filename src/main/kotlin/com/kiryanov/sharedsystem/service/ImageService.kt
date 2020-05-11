@@ -5,8 +5,6 @@ import com.kiryanov.sharedsystem.entity.main.Comment
 import com.kiryanov.sharedsystem.entity.main.ImageNode
 import com.kiryanov.sharedsystem.entity.main.News
 import com.kiryanov.sharedsystem.entity.main.User
-import com.kiryanov.sharedsystem.repository.image.ImageRepository
-import com.kiryanov.sharedsystem.repository.image2.ImageRepository2
 import com.kiryanov.sharedsystem.repository.main.ImageNodeRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -15,19 +13,18 @@ import org.springframework.stereotype.Service
 @Service
 class ImageService @Autowired constructor(
         private val imageNodeRepository: ImageNodeRepository,
-        private val imageRepository: ImageRepository,
-        private val imageRepository2: ImageRepository2
+        private val imageSaveStrategy: ImageSaveStrategy
 ) {
 
     fun getAll(): List<Image> {
         return imageNodeRepository.findAll().flatMap {
-            getRepository(it.nodeId).getImagesByEntityId(it.entityId)
+            imageSaveStrategy.getRepository(it.nodeId).getImagesByEntityId(it.entityId)
         }
     }
 
     fun getImagesByEntityId(entityId: String): List<Image> {
         return imageNodeRepository.getNodeByEntityId(entityId)?.let {
-            getRepository(it.nodeId).getImagesByEntityId(entityId)
+            imageSaveStrategy.getRepository(it.nodeId).getImagesByEntityId(entityId)
         } ?: emptyList()
     }
 
@@ -35,33 +32,36 @@ class ImageService @Autowired constructor(
         val newsImages = user.news.filter { news ->
             imageNodeRepository.getNodeByEntityId(news.id)?.nodeId == nodeId
         }.flatMap { news -> imageNodeRepository.getNodeByEntityId(news.id)?.let { node ->
-            getRepository(node.nodeId).getImagesByEntityId(news.id)
+            imageSaveStrategy.getRepository(node.nodeId).getImagesByEntityId(news.id)
         } ?: emptyList() }
 
         val commentImages = user.comment.filter { comment ->
             imageNodeRepository.getNodeByEntityId(comment.id)?.nodeId == nodeId
         }.flatMap { comment -> imageNodeRepository.getNodeByEntityId(comment.id)?.let { node ->
-            getRepository(node.nodeId).getImagesByEntityId(comment.id)
+            imageSaveStrategy.getRepository(node.nodeId).getImagesByEntityId(comment.id)
         } ?: emptyList() }
 
         return listOf(newsImages, commentImages).flatten()
     }
 
     fun add(imageName: String, entityId: String): Image {
-        return imageRepository.save(Image(
+        val nodeId = imageNodeRepository.getNodeByEntityId(entityId)?.nodeId
+                ?: imageSaveStrategy.getNodeIdForSaveImage(entityId)
+
+        return imageSaveStrategy.getRepository(nodeId).save(Image(
                 imageName,
                 entityId
         )).also { image ->
             imageNodeRepository.getNodeByEntityId(image.entityId)
                     ?: imageNodeRepository.save(ImageNode(
-                            NodeId.IMAGE_1, image.entityId
+                            nodeId, image.entityId
                     ))
         }
     }
 
     fun deleteImage(entityId: String, imageId: String) {
         imageNodeRepository.getNodeByEntityId(entityId)?.let { node ->
-            getRepository(node.nodeId).let { repository ->
+            imageSaveStrategy.getRepository(node.nodeId).let { repository ->
                 repository.findImageById(imageId)?.let { image ->
                     repository.delete(image)
                 }
@@ -73,14 +73,14 @@ class ImageService @Autowired constructor(
 
     fun deleteImages(comment: Comment) {
         imageNodeRepository.getNodeByEntityId(comment.id)?.let { node ->
-            getRepository(node.nodeId).deleteImageByEntityId(comment.id)
+            imageSaveStrategy.getRepository(node.nodeId).deleteImageByEntityId(comment.id)
             deleteNodeIfNeeded(node)
         }
     }
 
     fun deleteImages(news: News) {
         imageNodeRepository.getNodeByEntityId(news.id)?.let { node ->
-            getRepository(node.nodeId).deleteImageByEntityId(news.id)
+            imageSaveStrategy.getRepository(node.nodeId).deleteImageByEntityId(news.id)
             deleteNodeIfNeeded(node)
         }
         news.comment.forEach { deleteImages(it) }
@@ -92,19 +92,9 @@ class ImageService @Autowired constructor(
     }
 
     private fun deleteNodeIfNeeded(node: ImageNode) {
-        if (getRepository(node.nodeId).getCountByEntityId(node.entityId) == 0L) {
+        if (imageSaveStrategy.getRepository(node.nodeId).getCountByEntityId(node.entityId) == 0L) {
             imageNodeRepository.delete(node)
         }
-    }
-
-    private fun getRepository(nodeId: NodeId): ImageRepository = when(nodeId) {
-        NodeId.IMAGE_1 -> imageRepository
-        NodeId.IMAGE_2 -> imageRepository2
-    }
-
-    private fun getNodeId(repository: ImageRepository): NodeId = when(repository) {
-        is ImageRepository2 -> NodeId.IMAGE_2
-        else -> NodeId.IMAGE_1
     }
 
     enum class NodeId {
