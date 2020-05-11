@@ -3,9 +3,9 @@ package com.kiryanov.sharedsystem.controller
 import com.kiryanov.sharedsystem.entity.image.Image
 import com.kiryanov.sharedsystem.entity.main.News
 import com.kiryanov.sharedsystem.entity.main.User
-import com.kiryanov.sharedsystem.repository.image.ImageRepository
 import com.kiryanov.sharedsystem.repository.main.NewsRepository
 import com.kiryanov.sharedsystem.repository.main.UserRepository
+import com.kiryanov.sharedsystem.service.ImageService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.PostMapping
 class NewsController @Autowired constructor(
         private val userRepository: UserRepository,
         private val newsRepository: NewsRepository,
-        private val imageRepository: ImageRepository
+        private val imageService: ImageService
 ) {
 
     @GetMapping("/news")
     fun mainAction(model: Model): String {
         model.addAttribute(NEWS_VIEW, NewsView())
         model.addAttribute(NEWS_LIST, newsRepository.findAll().map {
-            NewsView.map(it, imageRepository.getImagesByEntityId(it.id))
+            NewsView.map(it, imageService.getImagesByEntityId(it.id))
         })
 
         return NEWS_VIEW
@@ -48,8 +48,7 @@ class NewsController @Autowired constructor(
     @GetMapping("/news/delete/{newsId}")
     fun deleteAction(@PathVariable newsId: String, model: Model): String {
         newsRepository.findNewsById(newsId)?.let {
-            imageRepository.deleteImageByEntityId(it.id)
-            imageRepository.deleteImageByEntityId(it.comment.map { comment -> comment.id })
+            imageService.deleteImages(it)
             newsRepository.delete(it)
         }
 

@@ -3,10 +3,10 @@ package com.kiryanov.sharedsystem.controller
 import com.kiryanov.sharedsystem.entity.image.Image
 import com.kiryanov.sharedsystem.entity.main.Comment
 import com.kiryanov.sharedsystem.entity.main.User
-import com.kiryanov.sharedsystem.repository.image.ImageRepository
 import com.kiryanov.sharedsystem.repository.main.CommentRepository
 import com.kiryanov.sharedsystem.repository.main.NewsRepository
 import com.kiryanov.sharedsystem.repository.main.UserRepository
+import com.kiryanov.sharedsystem.service.ImageService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -21,14 +21,14 @@ class CommentController @Autowired constructor(
         private val commentRepository: CommentRepository,
         private val userRepository: UserRepository,
         private val newsRepository: NewsRepository,
-        private val imageRepository: ImageRepository
+        private val imageService: ImageService
 ) {
 
     @GetMapping("/comment")
     fun mainAction(model: Model): String {
         model.addAttribute(COMMENT_VIEW, CommentView())
         model.addAttribute(COMMENT_LIST, commentRepository.findAll().map {
-            CommentView.map(it, imageRepository.getImagesByEntityId(it.id))
+            CommentView.map(it, imageService.getImagesByEntityId(it.id))
         })
 
         return COMMENT_VIEW
@@ -60,7 +60,7 @@ class CommentController @Autowired constructor(
     @GetMapping("/comment/delete/{commentId}")
     fun deleteAction(@PathVariable commentId: String, model: Model): String {
         commentRepository.findCommentById(commentId)?.let {
-            imageRepository.deleteImageByEntityId(it.id)
+            imageService.deleteImages(it)
             commentRepository.delete(it)
         }
 

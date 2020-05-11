@@ -1,6 +1,7 @@
 package com.kiryanov.sharedsystem.repository.main
 
 import com.kiryanov.sharedsystem.entity.main.Comment
+import com.kiryanov.sharedsystem.entity.main.ImageNode
 import com.kiryanov.sharedsystem.entity.main.News
 import com.kiryanov.sharedsystem.entity.main.User
 import org.springframework.data.jpa.repository.JpaRepository
@@ -26,4 +27,10 @@ interface CommentRepository: JpaRepository<Comment, Long> {
 
     @Query("SELECT c FROM Comment c WHERE c.id = :id")
     fun findCommentById(@Param("id") id: String): Comment?
+}
+
+interface ImageNodeRepository: JpaRepository<ImageNode, Long> {
+
+    @Query("select node from ImageNode node where node.entityId = :entityId")
+    fun getNodeByEntityId(@Param("entityId") entityId: String): ImageNode?
 }

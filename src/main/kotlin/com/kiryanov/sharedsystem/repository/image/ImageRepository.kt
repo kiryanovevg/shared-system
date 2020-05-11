@@ -9,9 +9,6 @@ import org.springframework.transaction.annotation.Transactional
 
 interface ImageRepository: JpaRepository<Image, Long> {
 
-//    @Query("SELECT u FROM User u WHERE u.name = :name")
-//    fun findUserByName(@Param("name") name: String): User?
-
     @Query("select im from Image im where im.entityId = :entityId")
     fun getImagesByEntityId(@Param("entityId") entityId: String): List<Image>
 
@@ -27,4 +24,7 @@ interface ImageRepository: JpaRepository<Image, Long> {
 
     @Query("SELECT im FROM Image im WHERE im.id = :id")
     fun findImageById(@Param("id") id: String): Image?
+
+    @Query("SELECT COUNT(im) FROM Image im WHERE im.entityId = :entityId")
+    fun getCountByEntityId(@Param("entityId") entityId: String): Long
 }

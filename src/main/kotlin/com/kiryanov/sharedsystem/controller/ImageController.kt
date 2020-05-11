@@ -1,9 +1,9 @@
 package com.kiryanov.sharedsystem.controller
 
 import com.kiryanov.sharedsystem.entity.image.Image
-import com.kiryanov.sharedsystem.repository.image.ImageRepository
 import com.kiryanov.sharedsystem.repository.main.CommentRepository
 import com.kiryanov.sharedsystem.repository.main.NewsRepository
+import com.kiryanov.sharedsystem.service.ImageService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -12,9 +12,10 @@ import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 
+
 @Controller
 class ImageController @Autowired constructor(
-        private val imageRepository: ImageRepository,
+        private val imageService: ImageService,
         private val newsRepository: NewsRepository,
         private val commentRepository: CommentRepository
 ) {
@@ -22,7 +23,7 @@ class ImageController @Autowired constructor(
     @GetMapping("/image")
     fun mainAction(model: Model): String {
         model.addAttribute(IMAGE_VIEW, ImageView())
-        model.addAttribute(IMAGE_LIST, imageRepository.findAll().map { ImageView.map(it) })
+        model.addAttribute(IMAGE_LIST, imageService.getAll().map { ImageView.map(it) })
 
         return IMAGE_VIEW
     }
@@ -30,18 +31,13 @@ class ImageController @Autowired constructor(
     @PostMapping("/image")
     fun addAction(@ModelAttribute imageView: ImageView, model: Model): String {
         newsRepository.findNewsById(imageView.entityId)?.let {
-            imageRepository.save(Image(
-                    imageView.name,
-                    it.id
-            ))
+            imageService.add(imageView.name, it.id)
+
             return mainAction(model)
         }
 
         commentRepository.findCommentById(imageView.entityId)?.let {
-            imageRepository.save(Image(
-                    imageView.name,
-                    it.id
-            ))
+            imageService.add(imageView.name, it.id)
 
             return mainAction(model)
         }
@@ -50,11 +46,13 @@ class ImageController @Autowired constructor(
         return mainAction(model)
     }
 
-    @GetMapping("/image/delete/{imageId}")
-    fun deleteAction(@PathVariable imageId: String, model: Model): String {
-        imageRepository.findImageById(imageId)?.let {
-            imageRepository.delete(it)
-        }
+    @GetMapping("/image/delete/{entityId}/{imageId}")
+    fun deleteAction(
+            @PathVariable entityId: String,
+            @PathVariable imageId: String,
+            model: Model
+    ): String {
+        imageService.deleteImage(entityId, imageId)
 
         return "redirect:/image"
     }

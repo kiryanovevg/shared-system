@@ -25,6 +25,8 @@
 <tr th:each="user : ${userList}">
     <td><span th:text="'User id: ' + ${user.id}"> Title </span></td><br>
     <td><span th:text="'User name: ' + ${user.name}"> Author </span></td><br>
+    <td><span th:text="'Images #1: ' + ${user.images1}"> Author </span></td><br>
+    <td><span th:text="'Images #2: ' + ${user.images2}"> Author </span></td><br>
     <a th:href="@{/user/delete/{id}(id=${user.id})}">Delete</a><br><br>
 </tr>
 </tbody>

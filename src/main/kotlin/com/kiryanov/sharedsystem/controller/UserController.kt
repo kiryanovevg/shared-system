@@ -1,8 +1,9 @@
 package com.kiryanov.sharedsystem.controller
 
+import com.kiryanov.sharedsystem.entity.image.Image
 import com.kiryanov.sharedsystem.entity.main.User
-import com.kiryanov.sharedsystem.repository.image.ImageRepository
 import com.kiryanov.sharedsystem.repository.main.UserRepository
+import com.kiryanov.sharedsystem.service.ImageService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -14,13 +15,19 @@ import org.springframework.web.bind.annotation.PostMapping
 @Controller
 class UserController @Autowired constructor(
         private val userRepository: UserRepository,
-        private val imageRepository: ImageRepository
+        private val imageService: ImageService
 ) {
 
     @GetMapping("/user")
     fun mainAction(model: Model): String {
         model.addAttribute(USER_VIEW, UserView())
-        model.addAttribute(USER_LIST, userRepository.findAll().map { UserView.map(it) })
+        model.addAttribute(USER_LIST, userRepository.findAll().map {
+            UserView.map(
+                    it,
+                    imageService.getImagesByUserAndNodeId(it, ImageService.NodeId.IMAGE_1),
+                    imageService.getImagesByUserAndNodeId(it, ImageService.NodeId.IMAGE_2)
+            )
+        })
 
         return USER_VIEW
     }
@@ -37,8 +44,7 @@ class UserController @Autowired constructor(
     @GetMapping("/user/delete/{userId}")
     fun deleteAction(@PathVariable userId: String, model: Model): String {
         userRepository.findUserById(userId)?.let { deletedUser ->
-            imageRepository.deleteImageByEntityId(deletedUser.comment.map { it.id })
-            imageRepository.deleteImageByEntityId(deletedUser.news.map { it.id })
+            imageService.deleteImages(deletedUser)
             userRepository.delete(deletedUser)
         }
 
@@ -52,12 +58,16 @@ class UserController @Autowired constructor(
 
     data class UserView constructor(
             var id: String = "",
-            var name: String = ""
+            var name: String = "",
+            var images1: String = "",
+            var images2: String = ""
     ) {
         companion object {
-            fun map(user: User) = UserView(
+            fun map(user: User, images1: List<Image>, images2: List<Image>) = UserView(
                     user.id,
-                    user.name
+                    user.name,
+                    images1.joinToString { it.name },
+                    images2.joinToString { it.name }
             )
         }
     }
